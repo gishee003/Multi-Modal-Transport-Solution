@@ -1,0 +1,3 @@
+route_id,agency_id,route_short_name,route_long_name,route_type
+DTC-505,DTC,505,Rajiv Chowk - Pragati Maidan,3
+DTC-753,DTC,753,"India Gate - ITO - Delhi Gate",3

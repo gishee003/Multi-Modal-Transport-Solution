@@ -1,0 +1,16 @@
+{
+  "last_updated": "2026-11-15T09:59:30Z",
+  "ttl": 60,
+  "version": "3.0",
+  "data": {
+    "vehicles": [
+      { "vehicle_id": "ZR-SC-0042", "lat": 28.6330, "lon": 77.2195, "is_reserved": false, "is_disabled": false, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.82, "current_range_meters": 24000 },
+      { "vehicle_id": "ZR-SC-0043", "lat": 28.6325, "lon": 77.2201, "is_reserved": false, "is_disabled": false, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.64, "current_range_meters": 19000 },
+      { "vehicle_id": "ZR-SC-0044", "lat": 28.6290, "lon": 77.2185, "is_reserved": false, "is_disabled": false, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.91, "current_range_meters": 27000 },
+      { "vehicle_id": "ZR-SC-0045", "lat": 28.6135, "lon": 77.2290, "is_reserved": false, "is_disabled": false, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.55, "current_range_meters": 16000 },
+      { "vehicle_id": "ZR-SC-0046", "lat": 28.6260, "lon": 77.2330, "is_reserved": false, "is_disabled": false, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.77, "current_range_meters": 23000 },
+      { "vehicle_id": "ZR-SC-0012", "lat": 28.6318, "lon": 77.2210, "is_reserved": false, "is_disabled": false, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.12, "current_range_meters": 3000 },
+      { "vehicle_id": "ZR-SC-0013", "lat": 28.6301, "lon": 77.2178, "is_reserved": false, "is_disabled": true, "vehicle_type_id": "e-scooter", "current_fuel_percent": 0.70, "current_range_meters": 21000 }
+    ]
+  }
+}

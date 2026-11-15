@@ -1,0 +1,6 @@
+# Test-only overrides (Spring Boot reads classpath:/config/application.yml after classpath:/application.yml).
+# Background jobs are off so tests decide when polling, offline detection and expiry happen.
+mmts:
+  provider-hub:
+    background-jobs: false
+    retry-backoff-ms: 1
