@@ -25,3 +25,8 @@ Thumbs.db
 # Local secrets
 .env
 application-local.yml
+
+# Course documents stay on the laptop (the GitHub repository is public; only the code is shared)
+Group-11-ArchDrivers.pdf
+Technical_Architcture_Guidelines.docx
+Technical Architecture/
