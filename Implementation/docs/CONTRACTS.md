@@ -82,6 +82,8 @@ Response `201` (or `200` with the **same body** when the same `Idempotency-Key` 
 ```
 
 `status` is `CAPTURED` or `FAILED` (`failureReason` e.g. `INSUFFICIENT_BALANCE`, `GATEWAY_DECLINED`).
+A `FAILED` charge is also replayed as `FAILED` for the same key; to try again the caller sends a new key
+(for example `b-5001-pay-2`).
 
 **Refund**
 
@@ -202,7 +204,7 @@ Every event uses one envelope:
 | `licence.events` (INT-15) | APP-04 | `LICENCE_VERIFIED` | `userId`, `vehicleClasses[]`, `expiresOn` | APP-06, APP-08 |
 | | | `LICENCE_REJECTED` | `userId`, `reason` | |
 | | | `LICENCE_EXPIRED` | `userId`, `expiredOn` | |
-| `vehicle.events` (INT-14) | APP-08 | `VEHICLE_POSITION` | `vehicleId`, `providerId`, `mode`, `lat`, `lon`, `speedKmph`, `batteryPct` (may be null), `recordedAt` | APP-05 |
+| `vehicle.events` (INT-14) | APP-08 | `VEHICLE_POSITION` | `vehicleId`, `providerId`, `mode`, `lat`, `lon`, `speedKmph`, `batteryPct` (left out when unknown; event payloads never contain null values), `recordedAt` | APP-05 |
 | | | `VEHICLE_AVAILABILITY` | `vehicleId`, `providerId`, `mode`, `available`, `lat`, `lon` | |
 | `schedule.events` (INT-14) | APP-08 | `SCHEDULE_UPDATED` | `providerId`, `feedVersion`, `routeIds[]` | APP-05 |
 | `booking.events` (INT-16) | APP-06 | `BOOKING_CONFIRMED` | `bookingId`, `userId`, `totalPaise`, `legs[]` (`legId`, `mode`, `providerId`, `from`, `to`, `startTime`) | APP-05 |
