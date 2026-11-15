@@ -17,9 +17,17 @@ mvn test                                                   # all tests
 
 ## Main endpoints
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/v1/info` | Which application this is, and who is calling |
+| Method | Path | Role | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/journeys/search?from=PL-IITD&to=PL-IG&rankBy=FASTEST` | TRAVELLER | Mixed-mode journey options with time and fare per leg (INT-02) |
+| GET | `/api/v1/journeys/places` | TRAVELLER | Stations, stops, docks and places of the sample Delhi network |
+| GET | `/api/v1/journeys/nearby?lat=28.6328&lon=77.2197` | TRAVELLER | Free scooters, bikes and taxis near a point, with "last seen" |
+| GET | `/api/v1/trips`, `/api/v1/trips/{tripId}` | TRAVELLER (owner) | My trips, one trip with the state of each leg |
+| GET | `/api/v1/trips/{tripId}/live` | TRAVELLER (owner) | Live positions, ETA and alerts as Server-Sent Events (INT-03) |
+| POST | `/dev/journey/bookings`, `/vehicle-positions`, `/pricing-rules` | none (demo) | Stand in for APP-06, APP-08 and APP-09 by publishing their events |
+| GET | `/api/v1/info` | any | Which application this is, and who is calling |
+
+Listens to `vehicle.events`, `schedule.events`, `booking.events`, `pricing.rules`; publishes `audit.events`.
 
 ## More detail
 
