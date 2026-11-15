@@ -30,3 +30,6 @@ application-local.yml
 Group-11-ArchDrivers.pdf
 Technical_Architcture_Guidelines.docx
 Technical Architecture/
+
+# Claude Code local files
+.claude/

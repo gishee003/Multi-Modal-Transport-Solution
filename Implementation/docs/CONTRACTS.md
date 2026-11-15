@@ -43,7 +43,8 @@ Response `200`:
 }
 ```
 
-`reason` is one of `VERIFIED`, `NO_LICENCE`, `PENDING_VERIFICATION`, `REJECTED`, `EXPIRED`, `CLASS_NOT_COVERED`.
+`reason` is one of `VERIFIED`, `NO_LICENCE`, `PENDING_VERIFICATION`, `REJECTED`, `EXPIRED`, `CLASS_NOT_COVERED`, `NOT_A_DRIVER`
+(the last only for `purpose=TAXI_DRIVER` when the licence is fine but the account does not have the `DRIVER` role).
 `eligible` is `true` only for `VERIFIED`. Unknown user: `404 USER_NOT_FOUND`.
 
 ### INT-11 · Trip payment and refund: provided by APP-07, called by APP-06
