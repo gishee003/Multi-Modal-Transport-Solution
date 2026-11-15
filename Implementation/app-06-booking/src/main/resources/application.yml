@@ -1,0 +1,37 @@
+# Settings shared by every profile.
+server:
+  port: 8086
+
+spring:
+  application:
+    name: mmts-booking
+  profiles:
+    default: demo          # run with H2 unless another profile is chosen
+  jpa:
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+mmts:
+  app-id: APP-06
+  security:
+    # Shared signing key for login tokens (JWT, HS256). Every MMTS application uses the same key.
+    # Outside the demo, set the environment variable MMTS_JWT_SECRET instead.
+    jwt-secret: ${MMTS_JWT_SECRET:mmts-group11-demo-signing-key-change-me-0123456789}
+    issuer: mmts-identity
+    token-minutes: 60
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method

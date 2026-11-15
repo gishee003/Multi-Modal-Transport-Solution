@@ -1,0 +1,27 @@
+# Build output
+target/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Office lock files
+~$*
+
+# Local data and logs
+*.log
+*.mv.db
+*.trace.db
+
+# Local secrets
+.env
+application-local.yml
