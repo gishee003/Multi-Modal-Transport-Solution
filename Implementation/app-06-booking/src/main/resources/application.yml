@@ -21,6 +21,21 @@ mmts:
     jwt-secret: ${MMTS_JWT_SECRET:mmts-group11-demo-signing-key-change-me-0123456789}
     issuer: mmts-identity
     token-minutes: 60
+  booking:
+    # Key that signs QR tickets (HMAC-SHA256). Outside the demo, set MMTS_QR_KEY instead.
+    qr-signing-key: ${MMTS_QR_KEY:mmts-booking-qr-demo-key-change-me-2026}
+    hold-timeout-minutes: 10        # unpaid bookings older than this are cancelled
+    expiry-check-ms: 60000          # how often the hold-expiry job runs
+    default-surge-factor: 1.0       # taxi surge until APP-09 sends PRICING_RULES_UPDATED
+    stub:                           # stand-in for APP-08: known providers and fare per mode (paise)
+      providers: [DMRC, DTC, ZIPRIDE, YULU, ZOOMCAR, MERU]
+      fares-paise:
+        METRO: 4000
+        BUS: 1500
+        SCOOTER: 14500
+        BIKE: 3000
+        CAR: 120000
+        TAXI: 35000
 
 management:
   endpoints:

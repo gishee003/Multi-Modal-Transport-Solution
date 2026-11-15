@@ -20,6 +20,14 @@ mvn test                                                   # all tests
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/v1/info` | Which application this is, and who is calling |
+| POST | `/api/v1/bookings` | Book every leg of a journey, all-or-nothing (header `Idempotency-Key`) |
+| GET | `/api/v1/bookings`, `/api/v1/bookings/{id}` | List bookings / one booking with legs, tickets and saga log |
+| POST | `/api/v1/bookings/{id}/cancel` | Cancel: release holds and refund |
+| POST | `/api/v1/bookings/{id}/complete` | Mark the trip finished |
+| POST | `/api/v1/bookings/{id}/rating`, `/api/v1/bookings/{id}/problems` | Rate the trip (1-5), report a problem (GET lists problems) |
+| POST | `/api/v1/bookings/{id}/legs/{legId}/unlock` | Unlock the scooter / bike / car of a leg |
+| POST | `/api/v1/bookings/tickets/verify` | Check a QR ticket offline, as a gate would |
+| GET/POST | `/dev/stubs/**` | Demo only: make the next payment / hold / confirm / licence check fail |
 
 ## More detail
 

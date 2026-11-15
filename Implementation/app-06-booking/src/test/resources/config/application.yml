@@ -1,0 +1,5 @@
+# Test-only override (Spring Boot also reads classpath:/config/application.yml, with higher priority).
+# The hold-expiry job is called directly by HoldExpiryJobTest, so its timer must not fire during the tests.
+mmts:
+  booking:
+    expiry-check-ms: 3600000
