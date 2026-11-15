@@ -20,6 +20,7 @@ M6 (APP-09 Analytics & Compliance) is covered by the group design only.
 |---|---|
 | `docs/SHARED-SETUP.md` | The rules every application follows: tools, folder structure, errors, login tokens, events, tests, README layout |
 | `docs/CONTRACTS.md` | The agreed request / response and event formats between applications (INT-10 to INT-19) |
+| `docs/modules/` | One detailed guide per application: how it works, decisions, drivers, patterns, demo script, tests, likely viva questions |
 | `docs/DEMO-VS-PRODUCTION.md` | Why the demo runs on H2 and in-memory stand-ins while the document names PostgreSQL, Redis and Kafka |
 | `app-template/` | The starting project every application is copied from (contains the shared code) |
 | `app-04-…` to `app-08-…` | The five applications, one per member |

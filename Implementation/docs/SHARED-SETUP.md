@@ -117,19 +117,53 @@ Every application has at least:
 
 Run with `mvn test`. All tests must pass before a module is called done.
 
+### The 9 shared tests (in every application)
+
+These come from the template and check only the shared setup, not any module's features. They passed in all five
+applications when the skeletons were created (`mvn test`, 2026-11-15).
+
+**`SharedSetupTest`** starts the whole application in demo mode (H2) and sends it real HTTP requests:
+
+| # | Test | What it checks |
+|---|---|---|
+| 1 | `healthIsPublicAndUp` | `GET /actuator/health` works without logging in and answers `"status": "UP"` |
+| 2 | `apiWithoutTokenIsRejectedInSharedErrorFormat` | A call to `/api/v1/info` with no token is refused (401), and the error has the shared shape: `code`, `message`, `details`, `timestamp` |
+| 3 | `invalidTokenIsRejected` | A made-up token (`Bearer not-a-real-token`) is refused with 401 `UNAUTHORIZED` |
+| 4 | `demoTokenGivesAccessAndCarriesRoles` | A token from `POST /dev/token` for user `u-101` with role `TRAVELLER` lets the call through, and the app reads back the same user and role |
+| 5 | `invalidTokenRequestListsBadFields` | Asking for a token with an empty user id and no roles gives 400 `VALIDATION_FAILED`, listing both bad fields in `details` |
+| 6 | `publishedEventsAreListed` | An event published through `EventPublisher` appears at `GET /dev/events` with the right topic, type and data |
+
+**`JwtServiceTest`** tests the login-token code on its own, using a fixed clock so time can be controlled:
+
+| # | Test | What it checks |
+|---|---|---|
+| 7 | `tokenRoundTripKeepsUserAndRoles` | A token made for user `u-7` with two roles reads back as the same user and roles, and expires after 60 minutes |
+| 8 | `expiredTokenIsRefused` | A token made at 10:00 is rejected when checked at 12:00 |
+| 9 | `tokenSignedWithAnotherKeyIsRefused` | A token signed with a different key (a forged token) is rejected |
+
+Not covered by these: module features (booking, payment, licence checks and so on) and running on real PostgreSQL.
+Each application adds its own tests for those, and lists them in its README.
+
 ## 9. Sample data
 
 Each application loads a small set of realistic sample data on start-up in demo mode (a `DemoDataLoader` class marked
 `@Profile("demo")`), so every demo works immediately.
 
-## 10. README layout for each application
+## 10. README and module guide
 
-Every application's `README.md` uses these headings:
+Each application has two documents:
 
-1. **What this application does** (module, owner, functions covered)
-2. **How to run** (demo and PostgreSQL)
-3. **Architecture drivers demonstrated** (and how to see each one in the demo)
-4. **Design patterns used** (where in the code, and why)
-5. **Endpoints** (table)
-6. **Demo script** (step-by-step requests to show in the review)
-7. **What is stubbed** (and what the real integration would be)
+- **`README.md` (short):** what the application is, owner and port, how to run it, the main endpoints, and a link to its guide.
+  Nothing else.
+- **Module guide (detailed), `docs/modules/APP-0x-<name>.md`:** written so the owner can understand, demo and defend the
+  module. It follows `docs/modules/GUIDE-TEMPLATE.md`:
+  1. What this application does
+  2. How it works (each flow, step by step)
+  3. Design decisions and why
+  4. Architecture drivers demonstrated
+  5. Design patterns used
+  6. Endpoints in detail
+  7. Demo script
+  8. What is stubbed
+  9. Tests (every test explained)
+  10. Questions you may be asked

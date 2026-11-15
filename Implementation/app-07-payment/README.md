@@ -1,49 +1,27 @@
 # APP-07 Payment & Settlement Service
 
-> Starting project for every MMTS application. It already contains the shared code (`common/`) and shared tests.
-> Each application's README replaces this file and keeps the headings below.
+Back-end application for module M4 Payment & Settlement of MMTS (Group CSE752-2025-11).
 
-## 1. What this application does
+**Module:** M4 Payment & Settlement · **Owner:** Kautilya (MT2025064) · **Port:** 8087
 
-- **Module:** Mx …
-- **Owner:** … (roll number)
-- **Functions covered:** Mx.1 …, Mx.2 …
-
-## 2. How to run
+## Run
 
 ```bash
-mvn spring-boot:run                                        # demo mode (H2), port 8087
+mvn spring-boot:run                                        # demo mode (H2 database, nothing to install)
 mvn spring-boot:run -Dspring-boot.run.profiles=postgres    # real PostgreSQL (database mmts_payment)
 mvn test                                                   # all tests
 ```
 
-- Swagger UI: http://localhost:8087/swagger-ui.html
+- Swagger UI: http://localhost:8087/swagger-ui.html (get a token from `POST /dev/token`, then press **Authorize**)
 - Health: http://localhost:8087/actuator/health
-- H2 console: http://localhost:8087/h2-console (JDBC URL `jdbc:h2:mem:mmts-payment`, user `sa`, no password)
 
-Get a test token: `POST /dev/token` with `{"userId":"u-101","roles":["TRAVELLER"]}`, then press **Authorize** in Swagger UI.
+## Main endpoints
 
-## 3. Architecture drivers demonstrated
-
-| Driver | How this application meets it | How to see it in the demo |
+| Method | Path | Purpose |
 |---|---|---|
+| GET | `/api/v1/info` | Which application this is, and who is calling |
 
-## 4. Design patterns used
+## More detail
 
-| Pattern | Where in the code | Why |
-|---|---|---|
-
-## 5. Endpoints
-
-| Method | Path | Role | Purpose |
-|---|---|---|---|
-| GET | `/api/v1/info` | any logged-in user | Which application this is, and who is calling |
-
-## 6. Demo script
-
-1. …
-
-## 7. What is stubbed
-
-| Real system / application | Stub in this app | Real integration (architecture document §4 / §5) |
-|---|---|---|
+How it works, design decisions, drivers, patterns, demo script, stubs and tests:
+`../docs/modules/APP-07-payment.md`
