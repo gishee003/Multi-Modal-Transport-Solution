@@ -1,11 +1,11 @@
 # APP-0x … : Module guide
 
-> The detailed explanation of one application, written so its owner can understand, demo and defend it.
-> The application's README stays short and links here.
+> The detailed explanation of one service, written so its owner can understand, demo and defend it.
+> The service's README stays short and links here.
 
 **Module:** Mx … · **Owner:** … (roll number) · **Folder:** `app-0x-…` · **Port:** 808x
 
-## 1. What this application does
+## 1. What this service does
 
 Which functions of the module it covers (Mx.1, Mx.2 … from the architecture document, section 2.3), in plain words.
 

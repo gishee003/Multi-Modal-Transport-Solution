@@ -1,0 +1,118 @@
+# Settings shared by every profile.
+server:
+  port: 8088
+
+spring:
+  application:
+    name: mmts-provider-hub
+  profiles:
+    default: demo          # run with H2 unless another profile is chosen
+  jpa:
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+mmts:
+  app-id: APP-02
+  security:
+    # Shared signing key for login tokens (JWT, HS256). Every MMTS application uses the same key.
+    # Outside the demo, set the environment variable MMTS_JWT_SECRET instead.
+    jwt-secret: ${MMTS_JWT_SECRET:mmts-group11-demo-signing-key-change-me-0123456789}
+    issuer: mmts-identity
+    token-minutes: 60
+
+  # -------------------------------------------------------------------------------------------
+  # Provider Hub service settings (Externalization: no numbers or providers in code).
+  # -------------------------------------------------------------------------------------------
+  provider-hub:
+    hold-minutes: 10              # a hold lasts 10 minutes (INT-12)
+    offline-after-seconds: 60     # a vehicle silent for 60 s is offline
+    low-battery-pct: 20           # fleet health flags batteries below this
+    connector-retries: 3          # retries for safe-to-repeat plug-in calls (release, unlock)
+    retry-backoff-ms: 200
+    offer-stream-timeout-ms: 1800000
+    background-jobs: true         # feed polling, offline detection, hold expiry (off in tests)
+    feed-poll-ms: 30000           # re-read live feeds every 30 s (well inside the 60 s offline limit)
+
+    # The plugged-in providers. "connector" names the plug-in (ProviderConnector.type()).
+    # Adding a provider = adding a block here. Unknown or disabled providerId -> 404 PROVIDER_NOT_FOUND.
+    providers:
+      DMRC:
+        name: Delhi Metro Rail Corporation (via ONDC)
+        connector: ondc-metro
+        modes: [METRO]
+        operators: [op-dmrc]
+        settings:
+          bpp-id: dmrc.ondc.example
+          callback-timeout-ms: 2000
+          ticket-valid-minutes: 120
+      DTC:
+        name: Delhi Transport Corporation
+        connector: gtfs-bus
+        modes: [BUS]
+        base-price-paise: 1000
+        per-km-paise: 200
+        operators: [op-dtc]
+        settings:
+          feed: gtfs/dtc
+          ticket-valid-minutes: 120
+      ZIPRIDE:
+        name: ZipRide e-scooters
+        connector: gbfs-scooter
+        modes: [SCOOTER]
+        base-price-paise: 5000
+        per-km-paise: 3800
+        operators: [op-zipride]
+        settings:
+          feed: gbfs/zipride/vehicle_status.json
+          min-battery-pct: 20
+          code-prefix: ZR
+      DRIVEEASY:
+        name: DriveEasy self-drive cars
+        connector: car-rental
+        modes: [CAR]
+        base-price-paise: 60000
+        per-km-paise: 1200
+        operators: [op-driveeasy]
+        settings:
+          fleet: DE-CAR-101,DE-CAR-102,DE-CAR-103
+          parking-lat: 28.5562
+          parking-lon: 77.1000
+          rental-minutes: 240
+          code-prefix: DE
+      CITYCAB:
+        name: CityCab taxis
+        connector: taxi-driver
+        modes: [TAXI]
+        base-price-paise: 5000
+        per-km-paise: 1800
+        operators: [op-citycab]
+        settings:
+          max-pickup-km: 5
+          avg-speed-kmph: 20
+      HOPBIKE:
+        name: HopBike pedal bike-share
+        connector: gbfs-bike
+        enabled: false            # installed plug-in, provider switched off: set true to add it (driver D10)
+        modes: [BIKE]
+        base-price-paise: 1000
+        per-km-paise: 1000
+        operators: [op-hopbike]
+        settings:
+          feed: gbfs/hopbike/free_bike_status.json
+          code-prefix: HB

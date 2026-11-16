@@ -1,6 +1,6 @@
-# Shared setup: rules every application follows
+# Shared setup: rules every service follows
 
-These rules keep the five applications consistent, so they look like one team built them and could be connected later.
+These rules keep the five services consistent, so they look like one team built them and could be connected later.
 
 ## 1. Tools and versions
 
@@ -8,7 +8,7 @@ These rules keep the five applications consistent, so they look like one team bu
 |---|---|---|
 | Language | Java, compiled for **Java 17** | Runs on any teammate's laptop with Java 17 or newer |
 | Framework | **Spring Boot 3.5.16** | MVC framework from lecture 08; built-in security for RBAC (lecture 07) |
-| Build | Maven 3.9+ | One `pom.xml` per application |
+| Build | Maven 3.9+ | One `pom.xml` per service |
 | Database | H2 (demo) / PostgreSQL (real) | See `DEMO-VS-PRODUCTION.md` |
 | API docs | springdoc-openapi (Swagger UI) | Every endpoint can be tried in the browser |
 | Login tokens | JJWT 0.12.6 (signed JWT, HS256) | One shared way to check who is calling |
@@ -16,17 +16,17 @@ These rules keep the five applications consistent, so they look like one team bu
 
 ## 2. Names, ports and packages
 
-| Application | Folder | `artifactId` | Java package | Port |
+| Service | Folder | `artifactId` | Java package | Port |
 |---|---|---|---|---|
-| APP-04 Identity & Verification | `app-04-identity` | `mmts-identity` | `com.mmts.identity` | 8084 |
-| APP-05 Journey Planning & Tracking | `app-05-journey` | `mmts-journey` | `com.mmts.journey` | 8085 |
-| APP-06 Booking & Ticketing | `app-06-booking` | `mmts-booking` | `com.mmts.booking` | 8086 |
-| APP-07 Payment & Settlement | `app-07-payment` | `mmts-payment` | `com.mmts.payment` | 8087 |
-| APP-08 Provider Integration Hub | `app-08-provider-hub` | `mmts-provider-hub` | `com.mmts.provider` | 8088 |
+| Identity service | `app-01-traveller/identity-service` | `mmts-identity` | `com.mmts.identity` | 8084 |
+| Journey service | `app-01-traveller/journey-service` | `mmts-journey` | `com.mmts.journey` | 8085 |
+| Booking service | `app-01-traveller/booking-service` | `mmts-booking` | `com.mmts.booking` | 8086 |
+| Payment service | `app-01-traveller/payment-service` | `mmts-payment` | `com.mmts.payment` | 8087 |
+| Provider Hub service | `app-02-driver-operator/provider-hub-service` | `mmts-provider-hub` | `com.mmts.provider` | 8088 |
 
 All endpoints start with `/api/v1/`.
 
-## 3. Folder structure inside each application
+## 3. Folder structure inside each service
 
 The layers follow Figure 3 of the architecture document (closed layers, open security layer, lecture 15).
 
@@ -50,7 +50,7 @@ Rules:
 
 - A controller never calls a repository directly; it calls a service.
 - Entities never leave the service layer; controllers return DTOs (Java `record`s).
-- Anything outside the application (another MMTS app, DigiLocker, Razorpay, …) is reached through an interface in `adapter/`
+- Anything outside the service (another MMTS service, DigiLocker, Razorpay, …) is reached through an interface in `adapter/`
   with a `Stub…` implementation. The stub is the "stub" from lecture 19's stubs and drivers.
 - Settings (fares, timeouts, keys) go in `application.yml`, never in code (Externalization pattern, lecture 06a).
 
@@ -72,7 +72,7 @@ Validation errors (`@Valid`) list each bad field in `details`.
 
 ## 5. Login tokens and roles (shared by all apps)
 
-- APP-04 issues tokens; every app **checks** them the same way (`common/security`).
+- Identity service issues tokens; every app **checks** them the same way (`common/security`).
 - A token is a JWT signed with HS256 using the shared key `mmts.security.jwt-secret` (in `application.yml`;
   override with the environment variable `MMTS_JWT_SECRET` outside the demo).
 - Claims: `sub` = user id, `roles` = list of role names, `iss` = `mmts-identity`, expiry 60 minutes.
@@ -87,11 +87,11 @@ Validation errors (`@Valid`) list each bad field in `details`.
 | `SUPPORT` | Support staff (complaints, refunds) |
 | `FINANCE` | Finance staff |
 | `REGULATOR` | City regulator (read-only) |
-| `SERVICE` | Another MMTS application calling this one |
+| `SERVICE` | Another MMTS service calling this one |
 
 - Protect endpoints with `@PreAuthorize("hasRole('TRAVELLER')")` and similar.
 - Open without a token: `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**`, `/h2-console/**`, `/dev/**` (demo only).
-- **Testing without APP-04:** in demo mode, `POST /dev/token` returns a valid token for any user id and roles,
+- **Testing without Identity service:** in demo mode, `POST /dev/token` returns a valid token for any user id and roles,
   so every app can be tested on its own.
 
 ## 6. Events (stand-in for Kafka)
@@ -108,7 +108,7 @@ In the demo it is an in-memory cache; with Redis it would be the same annotation
 
 ## 8. Tests
 
-Every application has at least:
+Every service has at least:
 
 1. **Unit tests** for its main business rules (for example "an expired licence is refused").
 2. **Endpoint tests** with MockMvc that check the HTTP method, path, status codes and JSON fields of the endpoints listed in
@@ -117,12 +117,12 @@ Every application has at least:
 
 Run with `mvn test`. All tests must pass before a module is called done.
 
-### The 9 shared tests (in every application)
+### The 9 shared tests (in every service)
 
 These come from the template and check only the shared setup, not any module's features. They passed in all five
 applications when the skeletons were created (`mvn test`, 2026-11-15).
 
-**`SharedSetupTest`** starts the whole application in demo mode (H2) and sends it real HTTP requests:
+**`SharedSetupTest`** starts the whole service in demo mode (H2) and sends it real HTTP requests:
 
 | # | Test | What it checks |
 |---|---|---|
@@ -142,22 +142,22 @@ applications when the skeletons were created (`mvn test`, 2026-11-15).
 | 9 | `tokenSignedWithAnotherKeyIsRefused` | A token signed with a different key (a forged token) is rejected |
 
 Not covered by these: module features (booking, payment, licence checks and so on) and running on real PostgreSQL.
-Each application adds its own tests for those, and lists them in its README.
+Each service adds its own tests for those, and lists them in its README.
 
 ## 9. Sample data
 
-Each application loads a small set of realistic sample data on start-up in demo mode (a `DemoDataLoader` class marked
+Each service loads a small set of realistic sample data on start-up in demo mode (a `DemoDataLoader` class marked
 `@Profile("demo")`), so every demo works immediately.
 
 ## 10. README and module guide
 
-Each application has two documents:
+Each service has two documents:
 
-- **`README.md` (short):** what the application is, owner and port, how to run it, the main endpoints, and a link to its guide.
+- **`README.md` (short):** what the service is, owner and port, how to run it, the main endpoints, and a link to its guide.
   Nothing else.
 - **Module guide (detailed), `docs/modules/APP-0x-<name>.md`:** written so the owner can understand, demo and defend the
   module. It follows `docs/modules/GUIDE-TEMPLATE.md`:
-  1. What this application does
+  1. What this service does
   2. How it works (each flow, step by step)
   3. Design decisions and why
   4. Architecture drivers demonstrated

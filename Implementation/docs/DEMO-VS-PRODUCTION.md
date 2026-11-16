@@ -3,31 +3,31 @@
 The Technical Architecture Document describes MMTS as it would run **in production**. It names these technologies:
 
 - **PostgreSQL** for each service's database (DB-1 to DB-5)
-- **Redis** as a fast in-memory cache (CACHE-1 for APP-05, CACHE-2 for APP-08)
+- **Redis** as a fast in-memory cache (CACHE-1 for Journey service, CACHE-2 for Provider Hub service)
 - **Apache Kafka** as the event broker (VM-13 to VM-15)
-- **ClickHouse** for analytics (APP-09 only, which is not built individually)
+- **ClickHouse** for analytics (Analytics service only, which is not built individually)
 - Real external partners: **DigiLocker, Razorpay, ONDC, Delhi Open Transit Data, Google Maps, FCM, SMS gateway**
 
 MySQL is **not** part of the design.
 
 ## The approach: interfaces with swappable stand-ins
 
-Every application talks to a database, cache, event broker or partner **only through an interface** (a Java interface or a
-Spring abstraction). Each application has two run modes, called Spring *profiles*:
+Every service talks to a database, cache, event broker or partner **only through an interface** (a Java interface or a
+Spring abstraction). Each service has two run modes, called Spring *profiles*:
 
 | Technology in the document | `demo` profile (default) | `postgres` profile |
 |---|---|---|
 | PostgreSQL | **H2**, a database that runs inside the application, in PostgreSQL-compatible mode. Nothing to install. | **Real PostgreSQL 18**: same code, one setting changed |
-| Redis (APP-05, APP-08) | Spring's in-memory cache behind the same `@Cacheable` cache interface | In-memory cache (Redis is not installed) |
+| Redis (Journey service, Provider Hub service) | Spring's in-memory cache behind the same `@Cacheable` cache interface | In-memory cache (Redis is not installed) |
 | Kafka (events) | An in-process event bus behind the shared `EventPublisher` interface | In-process event bus (Kafka is not installed) |
 | DigiLocker, Razorpay, ONDC, … | Stub adapters that return realistic answers | Stub adapters (real partners need business accounts) |
 
 ## Why this is a fair way to demonstrate the architecture
 
 1. **It follows our own principles.** Principle **P3** says external systems are reached only through adapters, and principle
-   **P6** says applications are independent of the technology underneath. Swapping H2 for PostgreSQL, or the in-process bus
+   **P6** says services are independent of the technology underneath. Swapping H2 for PostgreSQL, or the in-process bus
    for Kafka, without touching business code is that principle working.
-2. **PostgreSQL can be shown live.** Run the application once in demo mode, then again with
+2. **PostgreSQL can be shown live.** Run a service once in demo mode, then again with
    `mvn spring-boot:run -Dspring-boot.run.profiles=postgres`: the same code now stores its data in the PostgreSQL 18
    installed on the laptop.
 3. **Redis and Kafka are swappable the same way.** Adding them means adding a dependency and a configuration file
@@ -46,7 +46,7 @@ Spring abstraction). Each application has two run modes, called Spring *profiles
    psql -U postgres -c "CREATE DATABASE mmts_identity"     # use the app's own database name, see its README
    ```
 
-2. Run the application with the profile. Username and password default to `postgres` / `postgres`;
+2. Run the service with the profile. Username and password default to `postgres` / `postgres`;
    override them with environment variables if yours differ:
 
    ```bash
@@ -61,12 +61,12 @@ Spring abstraction). Each application has two run modes, called Spring *profiles
 
 Tables are created automatically on first start.
 
-| Application | Database name |
+| Service | Database name |
 |---|---|
-| APP-04 Identity & Verification | `mmts_identity` |
-| APP-05 Journey Planning & Tracking | `mmts_journey` |
-| APP-06 Booking & Ticketing | `mmts_booking` |
-| APP-07 Payment & Settlement | `mmts_payment` |
-| APP-08 Provider Integration Hub | `mmts_provider_hub` |
+| Identity service | `mmts_identity` |
+| Journey service | `mmts_journey` |
+| Booking service | `mmts_booking` |
+| Payment service | `mmts_payment` |
+| Provider Hub service | `mmts_provider_hub` |
 
-One database per application, matching principle **P1** (database per service).
+One database per service, matching principle **P1** (database per service).

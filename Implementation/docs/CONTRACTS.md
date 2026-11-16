@@ -1,8 +1,8 @@
-# Contracts between applications
+# Contracts between services
 
 These are the agreed formats for the integrations in section 4 of the architecture document. The **provider** of each
 interface must implement it exactly; the **caller** builds a stub (in its `adapter/` package) that behaves the same way, so
-each application can be built and tested alone and the real applications could be connected later.
+each service can be built and tested alone and the real services could be connected later.
 
 Common rules:
 
@@ -21,14 +21,14 @@ Common rules:
 
 ## Synchronous interfaces (REST web service)
 
-### INT-10 and INT-13 · Drive eligibility check: provided by APP-04, called by APP-06 and APP-08
+### INT-10 and INT-13 · Drive eligibility check: provided by Identity service, called by Booking service and Provider Hub service
 
 `GET /api/v1/users/{userId}/drive-eligibility?vehicleClass=LMV&purpose=SELF_DRIVE`
 
 | Parameter | Values |
 |---|---|
 | `vehicleClass` | `LMV` (car), `MCWG` (motorcycle / scooter with gear) |
-| `purpose` | `SELF_DRIVE` (APP-06, INT-10) or `TAXI_DRIVER` (APP-08, INT-13) |
+| `purpose` | `SELF_DRIVE` (Booking service, INT-10) or `TAXI_DRIVER` (Provider Hub service, INT-13) |
 
 Response `200`:
 
@@ -47,7 +47,7 @@ Response `200`:
 (the last only for `purpose=TAXI_DRIVER` when the licence is fine but the account does not have the `DRIVER` role).
 `eligible` is `true` only for `VERIFIED`. Unknown user: `404 USER_NOT_FOUND`.
 
-### INT-11 · Trip payment and refund: provided by APP-07, called by APP-06
+### INT-11 · Trip payment and refund: provided by Payment service, called by Booking service
 
 **Charge once per booking**
 
@@ -96,7 +96,7 @@ A `FAILED` charge is also replayed as `FAILED` for the same key; to try again th
 Response `201`: `{ "refundId": "r-77", "paymentId": "p-9001", "status": "REFUNDED", "amountPaise": 18500 }`.
 Refunding more than was captured: `400 REFUND_EXCEEDS_PAYMENT`.
 
-### INT-12 · Leg hold, confirm, release and unlock: provided by APP-08, called by APP-06
+### INT-12 · Leg hold, confirm, release and unlock: provided by Provider Hub service, called by Booking service
 
 **Hold a leg**
 
@@ -166,17 +166,17 @@ Hold not confirmed: `409 HOLD_NOT_CONFIRMED`.
 
 ## Client-facing interfaces (INT-01 to INT-09)
 
-Each owner designs these endpoints in their own application and lists them in its README. Base paths:
+Each owner designs these endpoints in their own service and lists them in its README. Base paths:
 
 | Integration | Provider | Base path |
 |---|---|---|
-| INT-01 Traveller login and profile, INT-06 driver onboarding | APP-04 | `/api/v1/auth/**`, `/api/v1/users/**`, `/api/v1/licences/**` |
-| INT-02 Trip search | APP-05 | `/api/v1/journeys/**` |
-| INT-03 Live trip tracking (push) | APP-05 | `/api/v1/trips/{tripId}/live` |
-| INT-04 Booking and tickets | APP-06 | `/api/v1/bookings/**` |
-| INT-05 Wallet | APP-07 | `/api/v1/wallets/**` |
-| INT-07 Driver location and status | APP-08 | `/api/v1/drivers/{driverId}/locations`, `/api/v1/drivers/{driverId}/status` |
-| INT-08 Ride offers to driver (push) | APP-08 | `/api/v1/drivers/{driverId}/offers` |
+| INT-01 Traveller login and profile, INT-06 driver onboarding | Identity service | `/api/v1/auth/**`, `/api/v1/users/**`, `/api/v1/licences/**` |
+| INT-02 Trip search | Journey service | `/api/v1/journeys/**` |
+| INT-03 Live trip tracking (push) | Journey service | `/api/v1/trips/{tripId}/live` |
+| INT-04 Booking and tickets | Booking service | `/api/v1/bookings/**` |
+| INT-05 Wallet | Payment service | `/api/v1/wallets/**` |
+| INT-07 Driver location and status | Provider Hub service | `/api/v1/drivers/{driverId}/locations`, `/api/v1/drivers/{driverId}/status` |
+| INT-08 Ride offers to driver (push) | Provider Hub service | `/api/v1/drivers/{driverId}/offers` |
 
 **Push in the demo:** INT-03 and INT-08 are push flows (WebSocket in the architecture). The demo uses **Server-Sent Events**
 (`text/event-stream`): the same one-way push from server to app, but it can be watched with a browser or `curl`, with no extra
@@ -201,32 +201,32 @@ Every event uses one envelope:
 
 | Topic (integration) | Publisher | Type | Payload fields | Subscribers |
 |---|---|---|---|---|
-| `licence.events` (INT-15) | APP-04 | `LICENCE_VERIFIED` | `userId`, `vehicleClasses[]`, `expiresOn` | APP-06, APP-08 |
+| `licence.events` (INT-15) | Identity service | `LICENCE_VERIFIED` | `userId`, `vehicleClasses[]`, `expiresOn` | Booking service, Provider Hub service |
 | | | `LICENCE_REJECTED` | `userId`, `reason` | |
 | | | `LICENCE_EXPIRED` | `userId`, `expiredOn` | |
-| `vehicle.events` (INT-14) | APP-08 | `VEHICLE_POSITION` | `vehicleId`, `providerId`, `mode`, `lat`, `lon`, `speedKmph` and `batteryPct` (each left out when unknown; event payloads never contain null values), `recordedAt` | APP-05 |
+| `vehicle.events` (INT-14) | Provider Hub service | `VEHICLE_POSITION` | `vehicleId`, `providerId`, `mode`, `lat`, `lon`, `speedKmph` and `batteryPct` (each left out when unknown; event payloads never contain null values), `recordedAt` | Journey service |
 | | | `VEHICLE_AVAILABILITY` | `vehicleId`, `providerId`, `mode`, `available`, `lat`, `lon` | |
-| `schedule.events` (INT-14) | APP-08 | `SCHEDULE_UPDATED` | `providerId`, `feedVersion`, `routeIds[]` | APP-05 |
-| `booking.events` (INT-16) | APP-06 | `BOOKING_CONFIRMED` | `bookingId`, `userId`, `totalPaise`, `legs[]` (`legId`, `mode`, `providerId`, `from`, `to`, `startTime`) | APP-05 |
+| `schedule.events` (INT-14) | Provider Hub service | `SCHEDULE_UPDATED` | `providerId`, `feedVersion`, `routeIds[]` | Journey service |
+| `booking.events` (INT-16) | Booking service | `BOOKING_CONFIRMED` | `bookingId`, `userId`, `totalPaise`, `legs[]` (`legId`, `mode`, `providerId`, `from`, `to`, `startTime`) | Journey service |
 | | | `BOOKING_CANCELLED` | `bookingId`, `userId`, `reason` | |
 | | | `BOOKING_COMPLETED` | `bookingId`, `userId` | |
-| `payment.events` (INT-17) | APP-07 | `PAYMENT_CAPTURED` | `paymentId`, `bookingId`, `amountPaise` | APP-06 |
+| `payment.events` (INT-17) | Payment service | `PAYMENT_CAPTURED` | `paymentId`, `bookingId`, `amountPaise` | Booking service |
 | | | `PAYMENT_FAILED` | `paymentId`, `bookingId`, `reason` | |
 | | | `PAYMENT_REFUNDED` | `refundId`, `paymentId`, `bookingId`, `amountPaise` | |
-| `pricing.rules` (INT-18) | APP-09 | `PRICING_RULES_UPDATED` | `surgeFactor`, `commissionPercent`, `promotions[]` | APP-05, APP-06, APP-07 |
-| `audit.events` (INT-19) | every app | `AUDIT` | `actorId`, `actorRoles[]`, `action`, `resourceType`, `resourceId`, `outcome` (no personal data) | APP-09 |
+| `pricing.rules` (INT-18) | Analytics service | `PRICING_RULES_UPDATED` | `surgeFactor`, `commissionPercent`, `promotions[]` | Journey service, Booking service, Payment service |
+| `audit.events` (INT-19) | every service | `AUDIT` | `actorId`, `actorRoles[]`, `action`, `resourceType`, `resourceId`, `outcome` (no personal data) | Analytics service |
 
-APP-09 is not built, so `pricing.rules` is never published in the demo. Apps that need fares or commission read **default
+Analytics service is not built, so `pricing.rules` is never published in the demo. Apps that need fares or commission read **default
 values from `application.yml`** and also listen for `PRICING_RULES_UPDATED`, so the design stays complete.
 
-Each application publishes its own events through the shared `EventPublisher`. Because the applications run separately in the
-demo, an event does not travel to another application; each application shows what it published at `GET /dev/events`.
+Each service publishes its own events through the shared `EventPublisher`. Because the services run separately in the
+demo, an event does not travel to another service; each service shows what it published at `GET /dev/events`.
 
 ---
 
-## INT-20 · Daily settlement file (data interface): APP-07 to APP-09
+## INT-20 · Daily settlement file (data interface): Payment service to Analytics service
 
-APP-07 writes one CSV per day to `exports/settlement-YYYY-MM-DD.csv`:
+Payment service writes one CSV per day to `exports/settlement-YYYY-MM-DD.csv`:
 
 ```
 settlementDate,providerId,grossPaise,commissionPaise,netPaise,paymentCount
