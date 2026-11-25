@@ -1,0 +1,21 @@
+# Proof-of-concept profile: run together with "demo" (spring.profiles.active=demo,poc).
+# Events go through the real event broker (Kafka) and calls to other services are real HTTP calls.
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      auto-offset-reset: earliest
+      properties:
+        metadata.max.age.ms: 3000   # notice new topics quickly (pattern subscription)
+    producer:
+      acks: all
+
+mmts:
+  poc:
+    topic-pattern: '(booking|vehicle|schedule)\.events|pricing\.rules'   # only the topics this service listens to
+    identity-url: ${IDENTITY_URL:http://localhost:8084}
+    journey-url: ${JOURNEY_URL:http://localhost:8085}
+    booking-url: ${BOOKING_URL:http://localhost:8086}
+    payment-url: ${PAYMENT_URL:http://localhost:8087}
+    hub-url: ${HUB_URL:http://localhost:8088}
+    contracts-url: ${CONTRACTS_URL:http://localhost:8089}

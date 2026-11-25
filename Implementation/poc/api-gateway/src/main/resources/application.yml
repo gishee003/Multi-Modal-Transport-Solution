@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mmts-api-gateway
+  main:
+    web-application-type: reactive
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    gateway:
+      access: read-only
+
+mmts:
+  security:
+    # The same shared signing key and issuer as every MMTS service (docs/SHARED-SETUP.md).
+    jwt-secret: ${MMTS_JWT_SECRET:mmts-demo-signing-key-change-me-0123456789abcdef}
+    issuer: mmts-identity
+  routes:
+    identity: ${IDENTITY_URL:http://localhost:8084}
+    journey: ${JOURNEY_URL:http://localhost:8085}
+    booking: ${BOOKING_URL:http://localhost:8086}
+    payment: ${PAYMENT_URL:http://localhost:8087}
+    hub: ${HUB_URL:http://localhost:8088}
+    contracts: ${CONTRACTS_URL:http://localhost:8089}

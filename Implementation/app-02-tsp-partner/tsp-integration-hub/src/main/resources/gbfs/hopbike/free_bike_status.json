@@ -1,0 +1,13 @@
+{
+  "last_updated": 1794733170,
+  "ttl": 60,
+  "version": "2.3",
+  "data": {
+    "bikes": [
+      { "bike_id": "HB-BK-001", "lat": 28.6139, "lon": 77.2090, "is_reserved": false, "is_disabled": false },
+      { "bike_id": "HB-BK-002", "lat": 28.6145, "lon": 77.2101, "is_reserved": false, "is_disabled": false },
+      { "bike_id": "HB-BK-003", "lat": 28.6280, "lon": 77.2180, "is_reserved": false, "is_disabled": false },
+      { "bike_id": "HB-BK-004", "lat": 28.6290, "lon": 77.2200, "is_reserved": true, "is_disabled": false }
+    ]
+  }
+}

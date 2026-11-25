@@ -1,0 +1,61 @@
+# Settings shared by every profile.
+server:
+  port: 8087
+
+spring:
+  application:
+    name: mmts-payment
+  profiles:
+    default: demo          # run with H2 unless another profile is chosen
+  jpa:
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+mmts:
+  app-id: APP-01
+  security:
+    # Shared signing key for login tokens (JWT, HS256). Every MMTS application uses the same key.
+    # Outside the demo, set the environment variable MMTS_JWT_SECRET instead.
+    jwt-secret: ${MMTS_JWT_SECRET:mmts-demo-signing-key-change-me-0123456789abcdef}
+    issuer: mmts-identity
+    token-minutes: 60
+  # Payment & Settlement settings (bound to config/PaymentSettings). Money is always in paise.
+  payment:
+    commission:
+      percentage-basis-points: 500     # PERCENTAGE rule: 500 basis points = 5%. A PRICING_RULES_UPDATED event can change it.
+      flat-fee-paise: 500              # FLAT_FEE rule: Rs 5 per provider share
+      default-rule: PERCENTAGE         # for provider types not listed below
+      rule-by-provider-type:
+        METRO: PERCENTAGE
+        BUS: PERCENTAGE
+        TAXI: PERCENTAGE
+        CAR: PERCENTAGE
+        SCOOTER: FLAT_FEE
+        BIKE: FLAT_FEE
+    wallet:
+      max-top-up-paise: 1000000        # Rs 10,000 per top-up
+    gateway:
+      # Secret shared with the gateway to sign webhooks (HMAC-SHA256). Outside the demo set RAZORPAY_WEBHOOK_SECRET.
+      webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:demo-webhook-secret-change-me}
+    settlement:
+      export-dir: exports              # daily file for finance: exports/settlement-YYYY-MM-DD.csv
+    schedule:
+      enabled: true                    # tests set this to false
+      payout-cron: "0 30 23 * * *"     # every day 23:30 UTC: pay providers
+      settlement-cron: "0 45 23 * * *" # every day 23:45 UTC: write the settlement file
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method

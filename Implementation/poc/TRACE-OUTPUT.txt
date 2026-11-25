@@ -1,0 +1,65 @@
+﻿
+== 0. The API gateway is the only entry point and checks the login token
+   GET /api/v1/bookings, no token     401 
+   OK   the gateway refuses a call without a token
+   logged in through the gateway      traveller u-101, admin u-900 (real tokens from the Identity service)
+
+== 1. Both TSPs have an ACTIVE contract (M7, APP-02)
+   DMRC active-terms                  active=True commission=3.0%
+   OK   DMRC may be offered
+   CITYCAB active-terms               active=True commission=18.0%
+   OK   CITYCAB may be offered
+
+== 2. Plan: Journey search (M2, APP-01)
+   options found                      4 (best: 36 min, modes TAXI)
+   OK   route search answered through the gateway
+
+== 3. Book rail (DMRC via ONDC) + cab (CITYCAB): Booking saga across APP-01 and APP-02
+   booking                            201 b-f6df5c92 status=CONFIRMED total=Rs 125.39
+     leg METRO DMRC                   CONFIRMED access=QR_TICKET 
+     leg TAXI CITYCAB                 CONFIRMED access=DRIVER_ASSIGNED driver Ramesh Kumar (DL1CAB1234), ETA 1 min
+   saga steps                         CHECK_LICENCE: done - no self-drive leg, nothing to check | HOLD_LEGS: done - held [h-8e812103, h-a2da8b5f], total 12539 paise | CHARGE_PAYMENT: done - payment p-9003 captured, 12539 paise | CONFIRM_LEGS: done - confirmed [h-8e812103, h-a2da8b5f] | ISSUE_ACCESS: done - issued access for 2 legs
+   OK   all legs held, paid once, confirmed (real calls to TSP Hub and Payment)
+   wallet                             Rs 500 -> Rs 374.61
+   OK   charged exactly once by the Payment service
+
+== 4. Same request again (a retry with the same Idempotency-Key, e.g. after a network drop)
+   retry                              200 b-f6df5c92, wallet still Rs 374.61
+   OK   the same booking comes back; nothing is booked or charged twice (D6, D8)
+   same key, different trip (metro only) 422 IDEMPOTENCY_KEY_REUSED
+   OK   a key cannot be reused for a different request
+
+== 5. BOOKING_CONFIRMED travelled through Kafka: Journey created the trip (event-driven, INT-16)
+   trip in Journey service            trip-b-f6df5c92 status=ACTIVE
+   OK   Journey learned about the booking only from the event broker
+
+== 6. Partner team suspends CITYCAB's contract (SLA breach): contract.events -> TSP Hub, Payment
+   contract c-citycab-1               SUSPENDED (SLA_BREACH)
+   TSP Hub sees CITYCAB as            SUSPENDED
+   OK   the hub switched the connector off after the Kafka event (D15)
+
+== 7. The same trip again: the cab leg is refused, the rail hold is undone, nothing is charged
+   booking attempt                    409 BOOKING_FAILED
+   reason                             Booking b-fd56701a was cancelled (HOLD_REFUSED: CITYCAB refused b-fd56701a-L2 (TSP_CONTRACT_INACTIVE)); every completed step was undone. See GET /api/v1/bookings/b-fd56701a
+   OK   all-or-nothing: no booking, no charge (D6, D7)
+
+== 8. Contract re-activated: CITYCAB is offered again
+   contract / hub                     ACTIVE / ENABLED
+   OK   connector usable again
+
+== 9. A new driver joins CITYCAB: TSP Hub (APP-02) asks Identity (APP-01) over REST (INT-13)
+   activate u-102 (verified LMV licence) 200 ACTIVE
+   OK   activated only after the Identity service confirmed the licence (D3)
+   activate u-104 (no licence)        409 DRIVER_NOT_ELIGIBLE
+   OK   refused: Identity says the person may not drive
+
+== 10. After the trip: SLA measurement for CITYCAB (M7.5)
+   period poc-20261125180720          cancellations 2.0% breached=False contract=ACTIVE
+   OK   within the SLA (5 % cancellations, 97 % availability, 8 min response)
+
+== 11. The traveller cancels the trip: holds released at both TSPs, money refunded (M3.5, M4.3)
+   booking b-f6df5c92                 200 CANCELLED, refund r-72
+   wallet                             Rs 374.61 -> Rs 500
+   OK   cab driver freed and the traveller refunded (the trace can be run again)
+
+Trace finished: every check passed.

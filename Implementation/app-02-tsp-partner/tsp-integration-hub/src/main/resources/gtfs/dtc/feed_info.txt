@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_version
+Delhi Open Transit Data (sample),https://otd.delhi.gov.in,en,2026-11-01

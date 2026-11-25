@@ -1,0 +1,3 @@
+# Generated daily settlement files (finance download); never commit them.
+exports/
+target/

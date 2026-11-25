@@ -1,0 +1,73 @@
+# Settings shared by every profile.
+server:
+  port: 8085
+
+spring:
+  application:
+    name: mmts-journey
+  profiles:
+    default: demo          # run with H2 unless another profile is chosen
+  jpa:
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+mmts:
+  app-id: APP-01
+  security:
+    # Shared signing key for login tokens (JWT, HS256). Every MMTS application uses the same key.
+    # Outside the demo, set the environment variable MMTS_JWT_SECRET instead.
+    jwt-secret: ${MMTS_JWT_SECRET:mmts-demo-signing-key-change-me-0123456789abcdef}
+    issuer: mmts-identity
+    token-minutes: 60
+
+  # ---- Journey service settings (Externalization: change here, not in code) ----
+  journey:
+    scheduler:
+      enabled: true              # timers: vehicle simulator, live status pushes, cache expiry (tests switch it off)
+    search:
+      max-options: 5             # how many options one search returns
+      cache-ttl-ms: 60000        # cached search answers are forgotten after this (Redis TTL stand-in)
+    fares:                       # money in paise (100 paise = 1 rupee)
+      metro-slabs:               # DMRC-style distance bands
+        - { up-to-km: 2, fare-paise: 1100 }
+        - { up-to-km: 5, fare-paise: 2100 }
+        - { up-to-km: 12, fare-paise: 3200 }
+        - { up-to-km: 21, fare-paise: 4300 }
+        - { up-to-km: 32, fare-paise: 5400 }
+        - { up-to-km: 1000, fare-paise: 6400 }
+      bus-slabs:                 # DTC AC bus bands
+        - { up-to-km: 4, fare-paise: 1000 }
+        - { up-to-km: 10, fare-paise: 1500 }
+        - { up-to-km: 1000, fare-paise: 2500 }
+      scooter-unlock-paise: 1000
+      scooter-per-minute-paise: 300
+      bike-unlock-paise: 500
+      bike-per-minute-paise: 100
+      taxi-base-paise: 5000
+      taxi-per-km-paise: 1800
+      surge-factor: 1.0          # replaced at run time by a PRICING_RULES_UPDATED event
+    tracking:
+      stale-after-seconds: 10    # driver D5: an older position is shown as "last seen", not live
+      switch-mode-after-seconds: 30
+      delay-alert-minutes: 5
+      status-interval-ms: 5000   # how often watchers get a status message
+      stream-timeout-minutes: 30
+    simulator:                   # demo only: stand-in for TSP Integration Hub's vehicle feed
+      interval-ms: 5000
+      steps-per-leg: 12          # a booked vehicle needs this many steps to finish its leg
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method

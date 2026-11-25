@@ -1,0 +1,7 @@
+# Test-only additions (Spring Boot also reads classpath:/config/application.yml, on top of the main application.yml).
+# Timers are switched off so the vehicle simulator and status pushes never interfere with the tests;
+# tests call those methods directly when they need them.
+mmts:
+  journey:
+    scheduler:
+      enabled: false

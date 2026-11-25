@@ -1,0 +1,7 @@
+stop_id,stop_name,stop_lat,stop_lon
+DTC-S01,Rajiv Chowk Bus Stop,28.6315,77.2167
+DTC-S02,Janpath,28.6250,77.2190
+DTC-S03,India Gate,28.6129,77.2295
+DTC-S04,Pragati Maidan,28.6187,77.2459
+DTC-S05,ITO,28.6289,77.2410
+DTC-S06,Delhi Gate,28.6400,77.2405
